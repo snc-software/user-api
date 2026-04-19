@@ -137,7 +137,7 @@ func (handler UserRouteHandler) Delete(responseWriter http.ResponseWriter, reque
 
 	deleteErr := handler.userService.Delete(id)
 	if deleteErr != nil {
-		utils.HandleError(responseWriter, err)
+		utils.HandleError(responseWriter, deleteErr)
 		return
 	}
 
