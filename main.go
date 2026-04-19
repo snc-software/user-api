@@ -6,6 +6,7 @@ import (
 	_ "user-api/docs"
 	"user-api/domain/services"
 	"user-api/routes"
+	"user-api/routes/middleware"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -25,6 +26,7 @@ func main() {
 	userService := services.UserService{}
 	
 	router := chi.NewRouter()
+	router.Use(middleware.ErrorHandler)
 	router.Mount("/users", routes.UserRoutes(userService))
 	router.Get("/swagger/*", httpSwagger.WrapHandler)
 

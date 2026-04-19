@@ -1,13 +1,13 @@
 basePath: /
 definitions:
-  models.CreateUserModel:
+  contracts.CreateUserRequest:
     properties:
       email:
         type: string
       name:
         type: string
     type: object
-  models.UserModel:
+  contracts.UserResponse:
     properties:
       email:
         type: string
@@ -34,16 +34,20 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.CreateUserModel'
+          $ref: '#/definitions/contracts.CreateUserRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.UserModel'
+            $ref: '#/definitions/contracts.UserResponse'
         "400":
           description: invalid request body
+          schema:
+            type: string
+        "500":
+          description: internal error
           schema:
             type: string
       summary: Create user
@@ -64,9 +68,13 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserModel'
+            $ref: '#/definitions/contracts.UserResponse'
         "400":
           description: invalid id
+          schema:
+            type: string
+        "404":
+          description: not found
           schema:
             type: string
       summary: Get user by ID

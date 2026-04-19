@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateUserModel"
+                            "$ref": "#/definitions/contracts.CreateUserRequest"
                         }
                     }
                 ],
@@ -43,11 +43,17 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.UserModel"
+                            "$ref": "#/definitions/contracts.UserResponse"
                         }
                     },
                     "400": {
                         "description": "invalid request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
                         "schema": {
                             "type": "string"
                         }
@@ -78,11 +84,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.UserModel"
+                            "$ref": "#/definitions/contracts.UserResponse"
                         }
                     },
                     "400": {
                         "description": "invalid id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "not found",
                         "schema": {
                             "type": "string"
                         }
@@ -92,7 +104,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.CreateUserModel": {
+        "contracts.CreateUserRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -103,7 +115,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserModel": {
+        "contracts.UserResponse": {
             "type": "object",
             "properties": {
                 "email": {

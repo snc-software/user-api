@@ -10,7 +10,7 @@ import (
 
 type UserWriter struct{}
 
-func (UserWriter) Create(user entities.User) *entities.User {
+func (UserWriter) Create(user entities.User) (entities.User, error) {
 	db := persistence.NewConnection()
 	defer db.Close()
 
@@ -24,8 +24,8 @@ func (UserWriter) Create(user entities.User) *entities.User {
 		user,
 	)
 	if err != nil {
-		return nil
+		return entities.User{}, err
 	}
 
-	return &user
+	return user, nil
 }
