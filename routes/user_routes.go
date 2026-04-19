@@ -26,6 +26,7 @@ func UserRoutes(userService services.UserService) http.Handler {
 	router.Get("/", handler.GetPage)
 	router.Get("/{id}", handler.GetByID)
 	router.Post("/", handler.Create)
+	router.Delete("/{id}", handler.Delete)
 
 	return router
 }
@@ -115,4 +116,30 @@ func (handler UserRouteHandler) Create(responseWriter http.ResponseWriter, reque
 	userResponse := mapping.MapToResponse(created)
 
 	utils.CreatedResponse(responseWriter, userResponse)
+}
+
+// @Summary      Delete user by ID
+// @Description  Deletes a single user by ID
+// @Tags         Users
+// @Produce      json
+// @Param        id   path      string  true  "User ID"
+// @Success      204  
+// @Failure      400  {string}  string  "invalid id"
+// @Failure      404  {string}  string  "not found"
+// @Router       /users/{id} [delete]
+func (handler UserRouteHandler) Delete(responseWriter http.ResponseWriter, request *http.Request) {
+	idStr := chi.URLParam(request, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		utils.HandleError(responseWriter, exceptions.InvalidArgument("invalid id format"))
+		return
+	}
+
+	deleteErr := handler.userService.Delete(id)
+	if deleteErr != nil {
+		utils.HandleError(responseWriter, err)
+		return
+	}
+
+	utils.NoContentResponse(responseWriter)
 }

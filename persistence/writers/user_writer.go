@@ -1,7 +1,9 @@
 package writers
 
 import (
+	"fmt"
 	"time"
+	"user-api/exceptions"
 	"user-api/persistence"
 	"user-api/persistence/entities"
 
@@ -28,4 +30,21 @@ func (UserWriter) Create(user entities.User) (entities.User, error) {
 	}
 
 	return user, nil
+}
+
+func (UserWriter) Delete(id uuid.UUID) error {
+	db := persistence.NewConnection()
+	defer db.Close()
+
+	result, err := db.Exec(`DELETE FROM "Users" WHERE "Id" = $1`, id)
+	if err != nil {
+		return exceptions.Internal()
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil || rowsAffected == 0 {
+		return exceptions.NotFound(fmt.Sprintf("User with id '%s' not found", id))
+	}
+
+	return nil
 }

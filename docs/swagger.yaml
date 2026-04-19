@@ -99,6 +99,30 @@ paths:
       tags:
       - Users
   /users/{id}:
+    delete:
+      description: Deletes a single user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: invalid id
+          schema:
+            type: string
+        "404":
+          description: not found
+          schema:
+            type: string
+      summary: Delete user by ID
+      tags:
+      - Users
     get:
       description: Returns a single user by ID
       parameters:

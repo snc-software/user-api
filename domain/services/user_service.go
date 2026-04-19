@@ -60,3 +60,12 @@ func (UserService) GetPage(page, size int) ([]models.UserModel, int, error) {
 
 	return items, total, nil
 }
+
+func (UserService) Delete(id uuid.UUID) error {
+	_, err := readers.UserReader{}.GetByID(id)
+	if err != nil {
+		return exceptions.NotFound(fmt.Sprintf("User with id '%s' not found", id))
+	}
+
+	return writers.UserWriter{}.Delete(id)
+}

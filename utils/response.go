@@ -17,6 +17,10 @@ func OkResponse(responseWriter http.ResponseWriter, data any) {
 	WriteJsonResponse(responseWriter, data, http.StatusOK)
 }
 
+func NoContentResponse(responseWriter http.ResponseWriter) {
+	WriteJsonResponse(responseWriter, nil, http.StatusNoContent)
+}
+
 func CreatedResponse(responseWriter http.ResponseWriter, data any) {
 	WriteJsonResponse(responseWriter, data, http.StatusCreated)
 }
@@ -24,7 +28,9 @@ func CreatedResponse(responseWriter http.ResponseWriter, data any) {
 func WriteJsonResponse(responseWriter http.ResponseWriter, data any, statusCode int) {
 	responseWriter.Header().Set("Content-Type", "application/json")
 	responseWriter.WriteHeader(statusCode)
-	json.NewEncoder(responseWriter).Encode(data)
+	if data != nil {
+		json.NewEncoder(responseWriter).Encode(data)
+	}
 }
 
 func Error(responseWriter http.ResponseWriter, message string, statusCode int) {
