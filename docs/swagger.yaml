@@ -7,6 +7,24 @@ definitions:
       name:
         type: string
     type: object
+  contracts.PagedResponse-contracts_UserResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/contracts.UserResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/contracts.Pagination'
+    type: object
+  contracts.Pagination:
+    properties:
+      page:
+        type: integer
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
   contracts.UserResponse:
     properties:
       email:
@@ -24,6 +42,33 @@ info:
   version: "1.0"
 paths:
   /users:
+    get:
+      description: Returns a paged list of users
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contracts.PagedResponse-contracts_UserResponse'
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: Get paged users
+      tags:
+      - Users
     post:
       consumes:
       - application/json

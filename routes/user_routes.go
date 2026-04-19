@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	//"strconv"
-	domainerrors "user-api/domain/errors"
+	"strconv"
 	"user-api/domain/services"
+	"user-api/exceptions"
 	"user-api/mapping"
 	"user-api/routes/contracts"
 	"user-api/utils"
@@ -23,7 +23,7 @@ func UserRoutes(userService services.UserService) http.Handler {
 	handler := UserRouteHandler{userService: userService}
 
 	router := chi.NewRouter()
-	//router.Get("/", handler.GetPage)
+	router.Get("/", handler.GetPage)
 	router.Get("/{id}", handler.GetByID)
 	router.Post("/", handler.Create)
 
@@ -43,53 +43,49 @@ func (handler UserRouteHandler) GetByID(responseWriter http.ResponseWriter, requ
 	idStr := chi.URLParam(request, "id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		utils.Error(responseWriter, "invalid id", http.StatusBadRequest)
+		utils.HandleError(responseWriter, exceptions.InvalidArgument("invalid id format"))
 		return
 	}
 
 	user, err := handler.userService.GetByID(id)
-	if err == domainerrors.NotFound {
-		utils.Error(responseWriter, "user not found", http.StatusNotFound)
-		return
-	}
 	if err != nil {
-		utils.Error(responseWriter, "internal error", http.StatusInternalServerError)
+		utils.HandleError(responseWriter, err)
 		return
 	}
 
-	userResponse := mapping.MapToResponse(user)
-
-	utils.JSON(responseWriter, userResponse, http.StatusOK)
+	utils.OkResponse(responseWriter, mapping.MapToResponse(user))
 }
 
-// // @Summary      Get paged users
-// // @Description  Returns a paged list of users
-// // @Tags         Users
-// // @Produce      json
-// // @Param        page   query  int  false  "Page number"   default(1)
-// // @Param        size   query  int  false  "Page size"     default(10)
-// // @Success      200    {object}  models.PagedResponse[models.UserModel]
-// // @Failure      500    {string}  string  "internal error"
-// // @Router       /users [get]
-// func (handler UserRouteHandler) GetPage(responseWriter http.ResponseWriter, request *http.Request) {
-// 	page, err := strconv.Atoi(request.URL.Query().Get("page"))
-// 	if err != nil || page < 1 {
-// 		page = 1
-// 	}
+// @Summary      Get paged users
+// @Description  Returns a paged list of users
+// @Tags         Users
+// @Produce      json
+// @Param        page   query  int  false  "Page number"   default(1)
+// @Param        size   query  int  false  "Page size"     default(10)
+// @Success      200    {object}  contracts.PagedResponse[contracts.UserResponse]
+// @Failure      500    {string}  string  "internal error"
+// @Router       /users [get]
+func (handler UserRouteHandler) GetPage(responseWriter http.ResponseWriter, request *http.Request) {
+	page, err := strconv.Atoi(request.URL.Query().Get("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
 
-// 	size, err := strconv.Atoi(request.URL.Query().Get("size"))
-// 	if err != nil || size < 1 {
-// 		size = 10
-// 	}
+	size, err := strconv.Atoi(request.URL.Query().Get("size"))
+	if err != nil || size < 1 {
+		size = 10
+	}
 
-// 	result, err := handler.userService.GetPage(page, size)
-// 	if err != nil {
-// 		utils.Error(responseWriter, "internal error", http.StatusInternalServerError)
-// 		return
-// 	}
+	users, total, err := handler.userService.GetPage(page, size)
+	if err != nil {
+		utils.HandleError(responseWriter, exceptions.Internal())
+		return
+	}
 
-// 	utils.JSON(responseWriter, result, http.StatusOK)
-// }
+	pagedResponse := mapping.MapToPagedResponse(users, page, size, total)
+
+	utils.OkResponse(responseWriter, pagedResponse)
+}
 
 // @Summary      Create user
 // @Description  Creates a new user
@@ -105,18 +101,18 @@ func (handler UserRouteHandler) Create(responseWriter http.ResponseWriter, reque
 	var createRequest contracts.CreateUserRequest
 	err := json.NewDecoder(request.Body).Decode(&createRequest)
 	if err != nil {
-		utils.Error(responseWriter, "invalid request body", http.StatusBadRequest)
+		utils.HandleError(responseWriter, exceptions.InvalidArgument("invalid request body"))
 		return
 	}
 
 	domainCreateRequest := mapping.MapToDomain(createRequest)
 	created, err := handler.userService.Create(domainCreateRequest)
 	if err != nil {
-		utils.Error(responseWriter, "internal error", http.StatusInternalServerError)
+		utils.HandleError(responseWriter, exceptions.Internal())
 		return
 	}
 
 	userResponse := mapping.MapToResponse(created)
 
-	utils.JSON(responseWriter, userResponse, http.StatusCreated)
+	utils.CreatedResponse(responseWriter, userResponse)
 }

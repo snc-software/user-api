@@ -19,3 +19,19 @@ func MapToResponse(user models.UserModel) contracts.UserResponse {
 		Email: user.Email,
 	}
 }
+
+func MapToPagedResponse(users []models.UserModel, page, size, total int) contracts.PagedResponse[contracts.UserResponse] {
+	items := make([]contracts.UserResponse, len(users))
+	for i, user := range users {
+		items[i] = MapToResponse(user)
+	}
+
+	return contracts.PagedResponse[contracts.UserResponse]{
+		Items: items,
+		Pagination: contracts.Pagination{
+			Page:  page,
+			Size:  size,
+			Total: total,
+		},
+	}
+}
